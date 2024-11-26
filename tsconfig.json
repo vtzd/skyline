@@ -18,7 +18,7 @@
         "strictPropertyInitialization": true,
         "noImplicitThis": true,
         "noUncheckedIndexedAccess": true,
-        "exactOptionalPropertyTypes": true,
+        "exactOptionalPropertyTypes": false,
         "noImplicitOverride": true,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
