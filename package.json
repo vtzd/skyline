@@ -6,7 +6,7 @@
   },
   "scripts": {
     "lint": "npx eslint src --ext .ts,.tsx",
-    "test": "tsc && node dist/index.js && curl -X POST http://localhost:3000/api/trade -H \"Content-Type: application/json\" -d '{\"symbol\":\"KAS\",\"exchange\":\"Kraken\",\"action\":\"buy\"}'"
+    "dev": "tsc && node dist/index.js"
   },
   "dependencies": {
     "axios": "^1.7.8",
