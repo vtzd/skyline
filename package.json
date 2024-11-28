@@ -1,17 +1,25 @@
 {
+  "type": "module",
+  "imports": {
+    "#/*": "./dist/*",
+    "@/*": "./src/*"
+  },
   "scripts": {
-    "lint": "npx eslint src --ext .ts,.tsx"
+    "lint": "npx eslint src --ext .ts,.tsx",
+    "test": "tsc && node dist/index.js && curl -X POST http://localhost:3000/api/trade -H \"Content-Type: application/json\" -d '{\"symbol\":\"KAS\",\"exchange\":\"Kraken\",\"action\":\"buy\"}'"
   },
   "dependencies": {
+    "axios": "^1.7.8",
     "express": "^4.21.1"
   },
   "devDependencies": {
-    "typescript": "^5.7.2",
-    "dotenv": "^16.4.5",
-    "@types/node": "^22.9.1",
     "@types/express": "^5.0.0",
+    "@types/node": "^22.9.1",
     "@typescript-eslint/eslint-plugin": "^8.16.0",
     "@typescript-eslint/parser": "^8.16.0",
-    "eslint": "^9.15.0"
+    "dotenv": "^16.4.5",
+    "eslint": "^9.15.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
   }
 }

@@ -5,8 +5,8 @@
         "lib": [
             "ES2022",
         ],
-        "module": "ESNext",
-        "moduleResolution": "Bundler",
+        "module": "NodeNext",
+        "moduleResolution": "nodenext",
         "useDefineForClassFields": true,
         "allowJs": false,
         // Strict Type Checking
@@ -56,5 +56,11 @@
     "exclude": [
         "node_modules",
         "dist",
-    ]
+    ],
+    "ts-node": {
+        "esm": true,
+        "moduleTypes": {
+            "**/*": "module"
+    }
+}
 }
