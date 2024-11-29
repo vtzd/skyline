@@ -2,7 +2,7 @@ import * as crypto from 'node:crypto'
 import * as querystring from 'node:querystring'
 import axios, { AxiosRequestConfig } from "axios"
 import { TradeParams } from '@/types.js';
-import { KrakenBalanceResponse, KrakenOrderResponse, KrakenRequest } from './types.js';
+import { KrakenBalance, KrakenBalanceResponse, KrakenOrderRequest, KrakenOrderResponse, KrakenRequest } from './types.js';
 
 const KRAKEN_API_CONFIG = {
     BASE_URL: 'https://api.kraken.com',
@@ -39,51 +39,57 @@ const createHeaders = (endpoint: string, data: KrakenRequest['data']): KrakenReq
     }
 
     return {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/x-www-form-urlencoded', // application/json
         'Accept': 'application/json',
         'API-Key': key,
         'API-Sign': sign
     }
 }
 
-const getAccountBalance = async (): Promise<number> => {
+const getAccountBalance = async (): Promise<KrakenBalance | undefined> => {
     const endpoint = KRAKEN_API_CONFIG.ENDPOINTS.BALANCE
     const nonce = Date.now().toString()
     const data = { nonce }
     const config = createOrderConfig(endpoint, data)
 
     if (!config) {
-        // TODO
-        return 0
+        return undefined
     }
 
     try {
         const response = await axios.request<KrakenBalanceResponse>(config)
-        console.log(response)
-        if (response.data.error.length > 0) {
+        if (!response.data.result || response.data.error.length > 0) {
             console.error('Kraken API error:', response.data.error)
-            return 0
+            return undefined
         }
-        // TODO
-        return 0
+
+        const parsedBalance = Object.fromEntries(
+            Object.entries(response.data.result).map(([key, value]) =>
+                [key, Math.floor(parseFloat(value))]
+            )
+        );
+        return parsedBalance
     } catch (error) {
         console.error('Failed to fetch balance:', error)
-        // TODO
-        return 0
+        return undefined
     }
 }
 
-const createAddOrderData = async (params: TradeParams): Promise<KrakenRequest['data'] | undefined> => {
-    return undefined
-    // TODO
-    // {
-    //     nonce: Date.now().toString(),
-    //     validate: true, // TODO
-    //     ordertype: "market",
-    //     type: params.action,
-    //     volume: , // TODO
-    //     pair: `${params.symbol}USD`
-    // }
+const createAddOrderData = (params: TradeParams, balance: KrakenBalance): KrakenOrderRequest['data'] | undefined => {
+    const symbolBalance = balance[params.action === 'buy' ? 'USDT' : params.symbol]
+    if (!symbolBalance) {
+        // TODO Return error "No available balance"
+        return undefined
+    }
+
+    return {
+        nonce: Date.now().toString(),
+        validate: true, // TODO
+        ordertype: "market",
+        type: params.action as 'buy' | 'sell',
+        volume: symbolBalance.toString(),
+        pair: `${params.symbol}USDT`
+    }
 }
 
 const createOrderConfig = <T extends KrakenRequest['data']>(endpoint: string, data: T): AxiosRequestConfig | undefined => {
@@ -97,12 +103,24 @@ const createOrderConfig = <T extends KrakenRequest['data']>(endpoint: string, da
         method: 'post',
         url,
         headers,
-        data: JSON.stringify(data)
+        data
     }
 }
 
 export const createOrder = async (params: TradeParams): Promise<KrakenOrderResponse | undefined> => {
     const accountBalance = await getAccountBalance()
+    if (!accountBalance) {
+        return undefined
+    }
+
+    const orderData = createAddOrderData(params, accountBalance)
+    console.log(orderData)
     // TODO
     return undefined
 }
+
+
+// TODO
+// Try to keep the data in 1 flow. Data object gets passed through all functions to minimize side effects
+// and keep logic central. E.g. nonce won't be created in every function, but should be in header creation
+// instead.

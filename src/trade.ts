@@ -17,7 +17,6 @@ export const postTrade = async (req: Request<{}, {}, TradeParams>, res: Response
 
     try {
         const orderResult = await createOrder(validationResult.data);
-
         if (!orderResult) {
             resolveResponse(res, 422, {
                 status: 'error',

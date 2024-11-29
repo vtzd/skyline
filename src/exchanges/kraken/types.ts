@@ -22,6 +22,8 @@ export type KrakenBalanceResponse = KrakenResponse<{
     [key: string]: string;
 }>;
 
+export type KrakenBalance = Record<string, number>
+
 // Add order
 export type KrakenOrderRequest = KrakenRequest<{
     pair: string;
