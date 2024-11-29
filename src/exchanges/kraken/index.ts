@@ -1,8 +1,8 @@
 import * as crypto from 'node:crypto'
 import * as querystring from 'node:querystring'
-import axios, { AxiosRequestConfig } from "axios"
+import axios from "axios"
 import { TradeParams } from '@/types.js';
-import { KrakenBalance, KrakenBalanceResponse, KrakenOrderRequest, KrakenOrderResponse, KrakenRequest } from './types.js';
+import { KrakenBalanceResponse, KrakenOrderData, KrakenOrderResponse, KrakenRequest, KrakenRequestData, KrakenResponse } from './types.js';
 
 const KRAKEN_API_CONFIG = {
     BASE_URL: 'https://api.kraken.com',
@@ -12,15 +12,22 @@ const KRAKEN_API_CONFIG = {
     },
 } as const;
 
-const createSign = (endpoint: string, data: KrakenRequest['data']): string | undefined => {
+const getKey = () => {
+    const key = process.env.KRAKEN_KEY
+    if (!key) {
+        throw new Error('KRAKEN_KEY not found!');
+    }
+    return key
+}
+
+const createSign = <T>(endpoint: string, data: KrakenRequestData<T>): string => {
     const secret = process.env.KRAKEN_SECRET
     if (!secret) {
-        return undefined
+        throw new Error('KRAKEN_SECRET not found!');
     }
 
-    const nonce = data.nonce
     const dataString = querystring.stringify(data)
-    const signString = nonce + dataString
+    const signString = data.nonce + dataString
 
     const sha256Hash = crypto.createHash('sha256').update(signString).digest();
     const message = endpoint + sha256Hash.toString('binary');
@@ -28,99 +35,106 @@ const createSign = (endpoint: string, data: KrakenRequest['data']): string | und
     const hmac = crypto.createHmac('sha512', secretBuffer);
     hmac.update(message, 'binary');
 
-    return hmac.digest('base64');
+    const sign = hmac.digest('base64');
+    return sign
 }
 
-const createHeaders = (endpoint: string, data: KrakenRequest['data']): KrakenRequest['headers'] | undefined => {
-    const key = process.env.KRAKEN_KEY
+const addNonce = <T>(data: T): KrakenRequestData<T> => {
+    const nonce = Date.now().toString()
+    const requestData = Object.assign({ nonce }, data)
+
+    return requestData
+}
+
+const createHeaders = <T>(endpoint: string, data: KrakenRequestData<T>): KrakenRequest<T>['headers'] => {
+    const key = getKey();
     const sign = createSign(endpoint, data)
-    if (!key || !sign) {
-        return undefined
-    }
 
     return {
-        'Content-Type': 'application/x-www-form-urlencoded', // application/json
+        'Content-Type': 'application/x-www-form-urlencoded',
         'Accept': 'application/json',
         'API-Key': key,
         'API-Sign': sign
     }
 }
 
-const getAccountBalance = async (): Promise<KrakenBalance | undefined> => {
-    const endpoint = KRAKEN_API_CONFIG.ENDPOINTS.BALANCE
-    const nonce = Date.now().toString()
-    const data = { nonce }
-    const config = createOrderConfig(endpoint, data)
-
-    if (!config) {
-        return undefined
+const krakenRequest = async <R>(endpoint: string, data = {}): Promise<KrakenResponse<R>['result']> => {
+    const requestData = addNonce(data)
+    const headers = createHeaders(endpoint, requestData)
+    const url = `${KRAKEN_API_CONFIG.BASE_URL}${endpoint}`
+    const config = {
+        method: 'post',
+        url,
+        headers,
+        data: requestData
     }
 
+    const response = await axios.request<KrakenResponse<R>>(config)
+    const { result, error } = response.data
+    if (error.length > 0) {
+        throw new Error('Kraken API error:', { cause: error })
+    }
+
+    return result
+}
+
+const parseBalanceList = (data: KrakenBalanceResponse): [string, number][] => {
+    return Object.entries(data)
+        .map(([key, value]): [string, number] => [key, parseInt(value)])
+        .filter(([_, balance]) => !isNaN(balance) && balance > 0);
+}
+
+const getSymbolBalance = async (symbol: string): Promise<number | undefined> => {
     try {
-        const response = await axios.request<KrakenBalanceResponse>(config)
-        if (!response.data.result || response.data.error.length > 0) {
-            console.error('Kraken API error:', response.data.error)
+        const data = await krakenRequest<KrakenBalanceResponse>(KRAKEN_API_CONFIG.ENDPOINTS.BALANCE)
+
+        const parsedList = parseBalanceList(data)
+        const symbolBalance = parsedList.find(([sym]) => sym === symbol)
+        if (!symbolBalance) {
+            console.error(`No ${symbol} balance!`)
             return undefined
         }
 
-        const parsedBalance = Object.fromEntries(
-            Object.entries(response.data.result).map(([key, value]) =>
-                [key, Math.floor(parseFloat(value))]
-            )
-        );
-        return parsedBalance
+        const [_symbol, balance] = symbolBalance
+        return balance
     } catch (error) {
         console.error('Failed to fetch balance:', error)
         return undefined
     }
 }
 
-const createAddOrderData = (params: TradeParams, balance: KrakenBalance): KrakenOrderRequest['data'] | undefined => {
-    const symbolBalance = balance[params.action === 'buy' ? 'USDT' : params.symbol]
+const createAddOrderData = async (params: TradeParams): Promise<KrakenOrderData | undefined> => {
+    // TODO Validate if pair exists
+    const balanceSymbol = params.action === 'buy' ? 'USDT' : params.symbol // USDT or ZUSD?
+    const symbolBalance = await getSymbolBalance(balanceSymbol)
     if (!symbolBalance) {
-        // TODO Return error "No available balance"
         return undefined
     }
 
     return {
-        nonce: Date.now().toString(),
-        validate: true, // TODO
+        validate: true, // TODO turn off
         ordertype: "market",
-        type: params.action as 'buy' | 'sell',
+        type: params.action,
         volume: symbolBalance.toString(),
         pair: `${params.symbol}USDT`
     }
 }
 
-const createOrderConfig = <T extends KrakenRequest['data']>(endpoint: string, data: T): AxiosRequestConfig | undefined => {
-    const headers = createHeaders(endpoint, data)
-    if (!headers) {
-        return undefined
-    }
-
-    const url = `${KRAKEN_API_CONFIG.BASE_URL}${endpoint}`
-    return {
-        method: 'post',
-        url,
-        headers,
-        data
-    }
-}
-
 export const createOrder = async (params: TradeParams): Promise<KrakenOrderResponse | undefined> => {
-    const accountBalance = await getAccountBalance()
-    if (!accountBalance) {
+    try {
+        const orderData = await createAddOrderData(params)
+        const responseData = await krakenRequest<KrakenOrderResponse>(KRAKEN_API_CONFIG.ENDPOINTS.BALANCE, orderData)
+        return responseData
+    } catch (error) {
+        console.error('Failed to create order:', error)
         return undefined
     }
-
-    const orderData = createAddOrderData(params, accountBalance)
-    console.log(orderData)
-    // TODO
-    return undefined
 }
 
-
-// TODO
-// Try to keep the data in 1 flow. Data object gets passed through all functions to minimize side effects
-// and keep logic central. E.g. nonce won't be created in every function, but should be in header creation
-// instead.
+/**
+ * TODO
+ * - Test createOrder
+ * - Clean up files
+ * - Either Left/Right for error handling
+ * - Logger
+ */

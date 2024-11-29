@@ -1,4 +1,4 @@
-export type KrakenRequest<T = {}> = {
+export type KrakenRequest<T> = {
     headers: {
         'Content-Type': string,
         'Accept': string,
@@ -9,33 +9,28 @@ export type KrakenRequest<T = {}> = {
         nonce: string,
     } & T
 }
-
-type KrakenResponse<T> = {
+export type KrakenRequestData<T> = KrakenRequest<T>['data']
+export type KrakenResponse<T> = {
     error: string[];
     result: T;
 };
 
 // Balance
-export type KrakenBalanceRequest = KrakenRequest;
+export type KrakenBalanceData = Record<string, number>
+export type KrakenBalanceResponse = Record<string, string>;
 
-export type KrakenBalanceResponse = KrakenResponse<{
-    [key: string]: string;
-}>;
-
-export type KrakenBalance = Record<string, number>
 
 // Add order
-export type KrakenOrderRequest = KrakenRequest<{
+export type KrakenOrderData = {
     pair: string;
-    type: 'buy' | 'sell';
-    ordertype: 'market' | 'limit';
+    type: string;
+    ordertype: string;
     volume: string;
     price?: string;
     validate?: boolean;
-}>
-
-export type KrakenOrderResponse = KrakenResponse<{
+}
+export type KrakenOrderResponse = {
     descr: { order: string };
     txid: string[];
-}>;
+}
 
