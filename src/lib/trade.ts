@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
-import { createOrder } from "../exchanges/kraken/index.js";
+import { createKrakenOrder } from "../exchanges/kraken/index.js";
 import { resolveResponse } from './response.js';
-import { TradeParams } from './types.js';
+import { TradeParams } from '../types.js';
 import { validateTradeRequest } from './validators.js';
+
 
 export const postTrade = async (req: Request<{}, {}, TradeParams>, res: Response) => {
     const validationResult = validateTradeRequest(req.body);
@@ -16,7 +17,8 @@ export const postTrade = async (req: Request<{}, {}, TradeParams>, res: Response
     }
 
     try {
-        const orderResult = await createOrder(validationResult.data);
+        // TODO If adding more exchanges do some selector stuff here
+        const orderResult = await createKrakenOrder(validationResult.data);
         if (!orderResult) {
             resolveResponse(res, 422, {
                 status: 'error',

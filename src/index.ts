@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv'
 import express, { Request, Response } from 'express'
 import { postTrade } from './lib/trade.js';
 import { errorHandler, resolveResponse } from './lib/response.js';
-import { TradeParams } from './lib/types.js';
+import { TradeParams } from './types.js';
 
 // Initialize app
 dotenv.config()

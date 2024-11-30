@@ -1,6 +1,6 @@
 import { VALID_ACTIONS, VALID_EXCHANGES, VALID_SYMBOLS } from "@/config.js"
 import { Either, err, ok } from "./either.js"
-import { TradeParams } from "./types.js"
+import { TradeParams } from "../types.js"
 
 const isValidSymbol = (symbol: any): boolean => {
     if (typeof symbol !== "string") {

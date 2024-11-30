@@ -1,4 +1,4 @@
-import { TradeParams } from '@/lib/types.js';
+import { TradeParams } from '@/types.js';
 import { KrakenBalanceResponse, KrakenOrderData, KrakenOrderResponse } from './types.js';
 import { Either, err, isErr, ok } from '@/lib/either.js';
 import { krakenRequest } from './api.js';
@@ -45,7 +45,7 @@ const createAddOrderData = async (params: TradeParams): Promise<Either<string[],
     })
 }
 
-export const createOrder = async (params: TradeParams): Promise<Either<string[], KrakenOrderResponse>> => {
+export const createKrakenOrder = async (params: TradeParams): Promise<Either<string[], KrakenOrderResponse>> => {
     const orderData = await createAddOrderData(params)
     if (isErr(orderData)) {
         return orderData
