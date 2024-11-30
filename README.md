@@ -23,7 +23,7 @@ When creating an alert, refer to `TradeParams` to create your message:
 And enter your server URL under "Webhook URL"
 
 
-## Local API testing:
+## Local API testing
 ```
 npm run dev
 ```

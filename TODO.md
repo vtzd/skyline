@@ -1,3 +1,2 @@
-- Test createOrder functionality
 - Create logger
 - Kraken pair validation
