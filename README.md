@@ -1,7 +1,10 @@
 # Skyline
 A simple server to use TradingView webhook alerts to send trades to an exchange. 
 
-*I am not responsible for any lost capital.*
+
+> [!WARNING]
+> *None of this has been tested in production.*
+> *I am not responsible for any lost capital.*
 
 ## Installation
 ```
