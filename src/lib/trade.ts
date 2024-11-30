@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { createOrder } from "./exchanges/kraken/index.js";
+import { createOrder } from "../exchanges/kraken/index.js";
 import { resolveResponse } from './response.js';
-import { validateTradeRequest } from './validators.js';
 import { TradeParams } from './types.js';
+import { validateTradeRequest } from './validators.js';
 
 export const postTrade = async (req: Request<{}, {}, TradeParams>, res: Response) => {
     const validationResult = validateTradeRequest(req.body);

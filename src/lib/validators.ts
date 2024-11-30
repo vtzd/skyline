@@ -1,9 +1,8 @@
-import { TradeParams, ValidationResult } from "./types.js"
+import { VALID_ACTIONS, VALID_EXCHANGES, VALID_SYMBOLS } from "@/config.js"
+import { Either, err, ok } from "./either.js"
+import { TradeParams } from "./types.js"
 
-// TODO move consts to config file
-const VALID_SYMBOLS = ["KAS", "USD"]
 const isValidSymbol = (symbol: any): boolean => {
-    console.log(symbol)
     if (typeof symbol !== "string") {
         return false
     }
@@ -11,9 +10,7 @@ const isValidSymbol = (symbol: any): boolean => {
     return VALID_SYMBOLS.includes(symbol)
 }
 
-const VALID_EXCHANGES = ["Kraken"]
 const isValidExchange = (exchange: any): boolean => {
-    console.log(exchange)
     if (typeof exchange !== "string") {
         return false
     }
@@ -21,9 +18,7 @@ const isValidExchange = (exchange: any): boolean => {
     return VALID_EXCHANGES.includes(exchange)
 }
 
-const VALID_ACTIONS = ["buy", "sell"]
 const isValidAction = (action: any): boolean => {
-    console.log(action)
     if (typeof action !== "string") {
         return false
     }
@@ -41,35 +36,33 @@ const isValidSecret = (secret: any): boolean => {
 }
 
 
-export const validateTradeRequest = (params: unknown): ValidationResult<TradeParams> => {
+export const validateTradeRequest = (params: unknown): Either<string, TradeParams> => {
     if (!params || typeof params !== 'object') {
-        return { error: 'Invalid request body' };
+        return err('Invalid request body');
     }
 
     const { symbol, exchange, action, secret } = params as Record<string, unknown>;
 
     if (!isValidSymbol(symbol)) {
-        return { error: 'Invalid symbol' };
+        return err('Invalid symbol');
     }
 
     if (!isValidExchange(exchange)) {
-        return { error: 'Invalid exchange' };
+        return err('Invalid exchange');
     }
 
     if (!isValidAction(action)) {
-        return { error: 'Invalid action' };
+        return err('Invalid action');
     }
 
     if (!isValidSecret(secret)) {
-        return { error: 'Invalid authentication' };
+        return err('Invalid authentication');
     }
 
-    return {
-        data: {
-            symbol: symbol as string,
-            exchange: exchange as string,
-            action: action as string,
-            secret: secret as string
-        }
-    };
+    return ok({
+        symbol: symbol as string,
+        exchange: exchange as string,
+        action: action as string,
+        secret: secret as string
+    })
 };

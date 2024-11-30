@@ -1,3 +1,9 @@
+export type ApiConfig = {
+    BASE_URL: string,
+    ENDPOINTS: Record<string, string>,
+}
+
+
 export type ApiResult<T> = {
     success: boolean;
     data?: T;
@@ -10,9 +16,3 @@ export interface TradeParams {
     action: string;
     secret: string;
 }
-
-export interface ValidationResult<T> {
-    error?: string;
-    data?: T;
-}
-
