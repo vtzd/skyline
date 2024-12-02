@@ -20,7 +20,8 @@ When creating an alert, refer to `TradeParams` to create your message:
     symbol: "BTC",
     exchange: "Kraken",
     action: "{{strategy.order.action}}",
-    secret: "[API_SECRET from .env]";
+    secret: "[API_SECRET from .env]",
+    price: "{{close}}"
 }
 ```
 And enter your server URL under "Webhook URL"
