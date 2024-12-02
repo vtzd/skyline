@@ -9,9 +9,12 @@ const TERMINAL_COLORS = {
     white: '\x1b[47m',
     reset: '\x1b[0m'
 } as const;
-
 type TerminalColor = keyof typeof TERMINAL_COLORS;
 
+
+// const writeLog = (message: string): void => {
+//     // TODO
+// }
 
 export const log = {
     order: (message: string) => {
@@ -20,5 +23,9 @@ export const log = {
         const reset = TERMINAL_COLORS.reset;
 
         console.log(`${bgColor}${message}${reset}`);
+
+        // return {
+        //     write: () => writeLog(message)
+        // }
     }
 }

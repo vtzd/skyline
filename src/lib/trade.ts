@@ -9,7 +9,7 @@ import { isErr } from './either.js';
 
 export const postTrade = async (req: Request<{}, {}, TradeParams>, res: Response) => {
     const validationResult = validateTradeRequest(req.body);
-    if (!validationResult?.data || validationResult.error) {
+    if (isErr(validationResult)) {
         resolveResponse(res, 400, {
             status: 'error',
             message: validationResult.error,
