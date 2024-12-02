@@ -28,20 +28,27 @@ const getSymbolBalance = async (symbol: string): Promise<Either<string[], number
     return ok(symbolBalance[1])
 }
 
-const createAddOrderData = async (params: TradeParams): Promise<Either<string[], KrakenOrderData>> => {
-    // TODO Validate if pair exists
-    const balanceSymbol = params.action === 'buy' ? 'USDT' : params.symbol // USDT or ZUSD?
-    const symbolBalance = await getSymbolBalance(balanceSymbol)
-    if (isErr(symbolBalance)) {
-        return symbolBalance
+
+const getOrderVolume = (price: number, balance: number, isBuyOrder: boolean) => {
+    const volume = isBuyOrder ? balance / price : balance
+    return Math.floor(volume)
+}
+
+const createAddOrderData = async ({ action, symbol, price }: TradeParams): Promise<Either<string[], KrakenOrderData>> => {
+    const isBuyOrder = action === 'buy'
+    const balanceSymbol = isBuyOrder ? 'ZUSD' : symbol
+    const balance = await getSymbolBalance(balanceSymbol)
+    if (isErr(balance)) {
+        return balance
     }
 
+    const volume = getOrderVolume(price, balance.data, isBuyOrder)
     return ok({
         validate: true, // TODO turn off
         ordertype: "market",
-        type: params.action,
-        volume: symbolBalance.toString(),
-        pair: `${params.symbol}USDT`
+        type: action,
+        volume: volume.toString(),
+        pair: `${symbol}USD`
     })
 }
 
@@ -52,7 +59,7 @@ export const createKrakenOrder = async (params: TradeParams): Promise<Either<str
     }
 
     return await krakenRequest<KrakenOrderData, KrakenOrderResponse>(
-        KRAKEN_API_CONFIG.ENDPOINTS.BALANCE,
+        KRAKEN_API_CONFIG.ENDPOINTS.ADD_ORDER,
         orderData.data
     )
 }

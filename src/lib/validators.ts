@@ -35,13 +35,22 @@ const isValidSecret = (secret: any): boolean => {
     return process.env.API_SECRET === secret
 }
 
+const isValidPrice = (price: any): boolean => {
+    return !isNaN(price) && price > 0
+}
+
+const parsePrice = (price: any): number => {
+    const parsedPrice = parseFloat(price)
+    return parsedPrice
+}
+
 
 export const validateTradeRequest = (params: unknown): Either<string, TradeParams> => {
     if (!params || typeof params !== 'object') {
         return err('Invalid request body');
     }
 
-    const { symbol, exchange, action, secret } = params as Record<string, unknown>;
+    const { symbol, exchange, action, secret, price } = params as Record<string, unknown>;
 
     if (!isValidSymbol(symbol)) {
         return err('Invalid symbol');
@@ -59,10 +68,16 @@ export const validateTradeRequest = (params: unknown): Either<string, TradeParam
         return err('Invalid authentication');
     }
 
+    const parsedPrice = parsePrice(price)
+    if (!isValidPrice(parsedPrice)) {
+        return err('Invalid price')
+    }
+
     return ok({
         symbol: symbol as string,
         exchange: exchange as string,
         action: action as string,
-        secret: secret as string
+        secret: secret as string,
+        price: parsedPrice
     })
 };

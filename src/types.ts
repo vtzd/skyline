@@ -15,4 +15,5 @@ export interface TradeParams {
     exchange: string;
     action: string;
     secret: string;
+    price: number;
 }

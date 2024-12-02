@@ -3,6 +3,8 @@ import { createKrakenOrder } from "../exchanges/kraken/index.js";
 import { resolveResponse } from './response.js';
 import { TradeParams } from '../types.js';
 import { validateTradeRequest } from './validators.js';
+import { log } from './logger.js';
+import { isErr } from './either.js';
 
 
 export const postTrade = async (req: Request<{}, {}, TradeParams>, res: Response) => {
@@ -19,7 +21,7 @@ export const postTrade = async (req: Request<{}, {}, TradeParams>, res: Response
     try {
         // TODO If adding more exchanges do some selector stuff here
         const orderResult = await createKrakenOrder(validationResult.data);
-        if (!orderResult) {
+        if (isErr(orderResult)) {
             resolveResponse(res, 422, {
                 status: 'error',
                 message: 'Order creation failed',
@@ -28,6 +30,7 @@ export const postTrade = async (req: Request<{}, {}, TradeParams>, res: Response
             return;
         }
 
+        log.order(orderResult.data.descr.order)
         resolveResponse(res, 201, {
             status: 'success',
             message: 'Trade order created successfully',
