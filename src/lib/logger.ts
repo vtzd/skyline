@@ -12,9 +12,10 @@ const TERMINAL_COLORS = {
 
 type TerminalColor = keyof typeof TERMINAL_COLORS;
 
+
 export const log = {
     order: (message: string) => {
-        const color = message[0] === 'b' ? 'green' : 'red'
+        const color = message[0] === 'b' ? 'cyan' : 'red'
         const bgColor = TERMINAL_COLORS[color];
         const reset = TERMINAL_COLORS.reset;
 
