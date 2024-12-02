@@ -1,5 +1,14 @@
 {
   "type": "module",
+  "engines": {
+    "node": ">=22.11.0"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsup",
