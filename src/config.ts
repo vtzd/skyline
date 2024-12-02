@@ -8,6 +8,6 @@ export const KRAKEN_API_CONFIG = {
     },
 } satisfies ApiConfig
 
-export const VALID_SYMBOLS = ["KAS", "USD"]
+export const VALID_SYMBOLS = ["KAS", "BTC"]
 export const VALID_EXCHANGES = ["Kraken"]
 export const VALID_ACTIONS = ["buy", "sell"]
