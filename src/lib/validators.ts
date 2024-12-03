@@ -1,21 +1,24 @@
-import { VALID_ACTIONS, VALID_EXCHANGES, VALID_SYMBOLS } from "@/config.js"
 import { Either, err, ok } from "./either.js"
 import { TradeParams } from "../types.js"
 
+export const isProd = (): boolean => process.env.NODE_ENV === "prod"
+
 const isValidSymbol = (symbol: any): boolean => {
-    if (typeof symbol !== "string") {
+    const symbolList = process.env.VALID_SYMBOLS?.split(',')
+    if (!symbolList || typeof symbol !== "string") {
         return false
     }
 
-    return VALID_SYMBOLS.includes(symbol)
+    return symbolList.includes(symbol)
 }
 
 const isValidExchange = (exchange: any): boolean => {
-    if (typeof exchange !== "string") {
+    const exchangeList = process.env.VALID_EXCHANGES?.split(',')
+    if (!exchangeList || typeof exchange !== "string") {
         return false
     }
 
-    return VALID_EXCHANGES.includes(exchange)
+    return exchangeList.includes(exchange)
 }
 
 const isValidAction = (action: any): boolean => {
@@ -23,16 +26,17 @@ const isValidAction = (action: any): boolean => {
         return false
     }
 
-    return VALID_ACTIONS.includes(action)
+    return ["buy", "sell"].includes(action)
 }
 
 
 const isValidSecret = (secret: any): boolean => {
-    if (typeof secret !== "string") {
+    const envSecret = process.env.API_SECRET
+    if (!envSecret || typeof secret !== "string") {
         return false
     }
 
-    return process.env.API_SECRET === secret
+    return envSecret === secret
 }
 
 const isValidPrice = (price: any): boolean => {

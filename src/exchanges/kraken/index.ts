@@ -3,6 +3,7 @@ import { KrakenBalanceResponse, KrakenOrderData, KrakenOrderResponse } from './t
 import { Either, err, isErr, ok } from '@/lib/either.js';
 import { krakenRequest } from './api.js';
 import { KRAKEN_API_CONFIG } from '@/config.js';
+import { isProd } from '@/lib/validators.js';
 
 const parseBalanceList = (data: KrakenBalanceResponse): [string, number][] => {
     return Object.entries(data)
@@ -44,7 +45,7 @@ const createAddOrderData = async ({ action, symbol, price }: TradeParams): Promi
 
     const volume = getOrderVolume(price, balance.data, isBuyOrder)
     return ok({
-        validate: true, // TODO turn off
+        validate: isProd(),
         ordertype: "market",
         type: action,
         volume: volume.toString(),

@@ -7,7 +7,3 @@ export const KRAKEN_API_CONFIG = {
         ADD_ORDER: '/0/private/AddOrder'
     },
 } satisfies ApiConfig
-
-export const VALID_SYMBOLS = ["KAS", "BTC", "SOL"]
-export const VALID_EXCHANGES = ["Kraken"]
-export const VALID_ACTIONS = ["buy", "sell"]

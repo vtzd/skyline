@@ -12,9 +12,11 @@ npm i
 ```
 Rename/copy `.env.example` to `.env`, and fill in the values
 
-## Setting up TradingView alerts
-When creating an alert, refer to `TradeParams` to create your message:
+## Creating a trade
+When creating an trade, refer to `TradeParams` to create your data object.
 
+## Setting up TradingView alerts
+Enter your server URL under "Webhook URL", and enter the following as the alert message:
 ```
 {
     symbol: "BTC",
@@ -24,7 +26,6 @@ When creating an alert, refer to `TradeParams` to create your message:
     price: "{{close}}"
 }
 ```
-And enter your server URL under "Webhook URL"
 
 
 ## Local API testing
