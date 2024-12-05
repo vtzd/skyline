@@ -3,6 +3,7 @@ import express, { Request, Response } from 'express'
 import { postTrade } from './lib/trade.js';
 import { errorHandler, resolveResponse } from './lib/response.js';
 import { TradeParams } from './types.js';
+import { isProd } from './lib/validators.js';
 
 // Initialize app
 dotenv.config()
@@ -14,6 +15,7 @@ app.use(express.json());
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
+  console.log(isProd())
   console.log(`${process.env.NODE_ENV} server running at http://localhost:${PORT}`);
 });
 
