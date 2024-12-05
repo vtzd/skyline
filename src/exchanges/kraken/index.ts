@@ -45,7 +45,7 @@ const createAddOrderData = async ({ action, symbol, price }: TradeParams): Promi
 
     const volume = getOrderVolume(price, balance.data, isBuyOrder)
     return ok({
-        validate: isProd(),
+        validate: !isProd(),
         ordertype: "market",
         type: action,
         volume: volume.toString(),
