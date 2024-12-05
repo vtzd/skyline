@@ -1,4 +1,4 @@
-{
+ {
     "compilerOptions": {
         // Modern JavaScript Support
         "target": "ES2022",

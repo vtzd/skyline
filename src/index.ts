@@ -14,7 +14,7 @@ app.use(express.json());
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`${process.env.NODE_ENV} server running at http://localhost:${PORT}`);
 });
 
 // Routes
